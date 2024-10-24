@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mensajes</title>
+</head>
+<body>
+<h1>Hola desde la vista</h1>
+
+<form>
+    <h3>Mensaje</h3>
+    <input type="text" name="mensaje" id="mensaje_value" required>
+    <button id="btn_enviar" type="submit">Enviar</button>
+</form>
+
+<div id="responseMessage"></div>
+<br>
+<div id="resultado"></div>
+
+<script>
+    const btn_enviar = document.getElementById("btn_enviar");
+    const resultado = document.getElementById("resultado");
+
+    const consumir_api = async (e) => {
+
+        e.preventDefault(); // Evita que el formulario recargue la página
+
+        // Obtener el valor del mensaje desde el input
+        const mensaje = document.getElementById('mensaje_value').value;
+        console.log("Mensaje enviado:", mensaje);
+
+        try {
+            // Realizar la petición POST
+            const response = await fetch('http://localhost:8091/sendMessage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `mensaje=${encodeURIComponent(mensaje)}` // Formato correcto
+            });
+
+            // Manejo de la respuesta
+            if (response.ok) {
+                const responseData = await response.text(); // Leer la respuesta como texto
+                console.log("Respuesta del servidor:", responseData); // Mostrar la respuesta
+                mostrarEnDiv(responseData);
+
+            } else {
+                console.error("Error en la respuesta del servidor:", response.status);
+            }
+        } catch (error) {
+            console.error("Error en la solicitud:", error); // Manejo de errores de red
+        }
+    };
+
+    const mostrarEnDiv = (dataArray) =>{
+        resultado.textContent = dataArray;
+    }
+
+
+    btn_enviar.addEventListener("click",consumir_api);
+
+
+
+</script>
+
+</body>
+</html>
