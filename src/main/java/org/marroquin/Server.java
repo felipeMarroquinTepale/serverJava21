@@ -15,45 +15,41 @@ public class Server {
     ArrayList<String> mensajes = new ArrayList<>();
 
 
-    public Server() throws IOException {
-        server = HttpServer.create(new InetSocketAddress(8091),0);
+    public Server(int port) throws IOException {
+        //Esta creando un servidor HTTP que escucha el puerto 8091
+        server = HttpServer.create(new InetSocketAddress(port),0);
     }
 
-    public void definirRuta(){
+    public void definirRutaRaiz(){
         server.createContext("/",exchange -> {
-
             var bytes = Files.readAllBytes(Path.of("/home/felipe/IdeaProjects/server/src/main/resources/index.html"));
-
             exchange.sendResponseHeaders(200, bytes.length);
             OutputStream os = exchange.getResponseBody();
             os.write(bytes);
             os.close();
         });
+    }
 
+    public void definirRutaSendMessage(){
         server.createContext("/sendMessage", exchange -> {
             if ("POST".equals(exchange.getRequestMethod())) {
-                // Leer el cuerpo de la solicitud
                 InputStream is = exchange.getRequestBody();
                 String requestBody = new String(is.readAllBytes());
 
-                // Extraer el contenido del mensaje (application/x-www-form-urlencoded)
-                String mensaje = requestBody.split("=")[1]; // Asumiendo que solo hay un parámetro llamado "mensaje"
+                System.out.println(requestBody);
 
-                // Guardar el mensaje en la lista
-                mensajes.add(mensaje);
+                String mensaje = requestBody.split("=")[1];
+                Message msg = new Message(mensaje);
 
-                // Mostrar el mensaje en la consola del servidor
-                System.out.println("Mensaje recibido en el server: " + mensajes);
+                mensajes.add(msg.getContent());
 
-                // Enviar respuesta de confirmación
-                String response = "Mensaje recibido y almacenado: " + mensajes;
+                String response = String.valueOf(mensajes);
                 exchange.sendResponseHeaders(200, response.length());
                 OutputStream os = exchange.getResponseBody();
                 os.write(response.getBytes());
                 os.close();
             }
         });
-
     }
 
     public void iniciar(){
